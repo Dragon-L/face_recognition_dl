@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Face Recognition</title>
+</head>
+<body>
+<h1 style="position: center">Video</h1>
+<video id="video" width="400" height="300" autoplay loop></video>
+<canvas id="canvasHidden" width="400" height="300" hidden></canvas>
+<canvas id="canvasShow" width="400" height="300"></canvas>
+</body>
+<script>
+    window.requestAnimFrame = (function(){
+        return  window.requestAnimationFrame       ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame    ||
+            function( callback ){
+                window.setTimeout(callback, 1000 / 60);
+            };
+    })();
+
+    var video = document.getElementById('video');
+    var canvasHidden = document.getElementById('canvasHidden');
+    var canvasShow = document.getElementById('canvasShow');
+    var socket = new WebSocket('ws://localhost:8090');
+
+    socket.onmessage = function (e) {
+        console.log('Received: ' + e.data);
+        var ctx = canvasShow.getContext('2d');
+        var image = new Image();
+        image.src = 'data:image/jpeg;base64,' + e.data;
+        ctx.drawImage(image, 0, 0, 400, 300);
+        console.log('it is ok');
+    };
+
+    function sendFrameLoop() {
+        if (socket == null || socket.readyState != socket.OPEN) {
+            return;
+        }
+
+        console.log('sending frame');
+        var ctx = canvasHidden.getContext('2d');
+        ctx.drawImage(video, 0, 0, 400, 300);
+        var dataURL = canvasHidden.toDataURL('image/jpeg');
+
+        var msg = dataURL;
+        socket.send(msg);
+        setTimeout(function() {requestAnimFrame(sendFrameLoop)}, 250);
+    }
+
+    function successHandle(stream) {
+        video.src = window.URL.createObjectURL(stream);
+        video.play();
+        sendFrameLoop()
+    }
+
+    if (navigator.getUserMedia) {
+        var videoSelector = {video : true};
+        navigator.getUserMedia(videoSelector, successHandle, function() {
+            alert("Error fetching video from webcam");
+        });
+    } else {
+        alert("No webcam detected.");
+    }
+</script>
+</html>
