@@ -14,7 +14,7 @@ from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerF
 from twisted.internet import task, defer
 from twisted.python import log
 
-from face_recognition_webcam import face_recognition
+from face_recognition import face_recognition
 
 class FaceServerProtocol(WebSocketServerProtocol):
     def __init__(self):
@@ -27,13 +27,10 @@ class FaceServerProtocol(WebSocketServerProtocol):
         print('Websocket open.')
 
     def onMessage(self, payload, isBinary):
-        # print('Received: {}'.format(payload.decode('utf8')))
         msg = payload.decode('utf8')
         image = self.base64_to_array(msg)
+        print('received the image')
         recognized_image = face_recognition(image)
-        print('show')
-        cv2.imshow('imgae', recognized_image)
-        cv2.waitKey(1)
         msg = self.array_to_base64(recognized_image)
         self.sendMessage(msg)
 
@@ -51,7 +48,8 @@ class FaceServerProtocol(WebSocketServerProtocol):
         img_data = base64.b64decode(msg[len(head):])
         io = BytesIO(img_data)
         image = Image.open(io)
-        image = np.fliplr(np.asarray(image))
+        image = np.asarray(image)
+        # image = np.fliplr(np.asarray(image))
         io.close()
         return image
 

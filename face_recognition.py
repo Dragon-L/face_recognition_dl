@@ -77,12 +77,9 @@ def face_recognition(frame):
 
     for location, name in zip(face_locations, face_names):
         top, right, bottom, left = tuple(i * 4 for i in location)
-
         cv2.rectangle(frame, (left, top), (right, bottom), BOX_COLOR, 2)
 
         cv2.rectangle(frame, (left, bottom - 35), (right, bottom), BOX_COLOR, cv2.FILLED)
         cv2.putText(frame, name, (left, bottom), cv2.FONT_HERSHEY_DUPLEX, 1.0, FONT_COLOR, 1)
 
     return frame
-
-# face_recognition()

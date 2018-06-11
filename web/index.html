@@ -8,10 +8,10 @@
 </head>
 <body>
 <h1 style="position: center">Video</h1>
-<video id="video" width="400" height="300" autoplay loop></video>
+<video id="video" width="400" height="300" autoplay loop hidden></video>
 <canvas id="canvasHidden" width="400" height="300" hidden></canvas>
-<canvas id="canvasShow" width="400" height="300"></canvas>
-</body>
+<canvas id="canvasShow" width="400" height="300" ></canvas>
+
 <script>
     window.requestAnimFrame = (function(){
         return  window.requestAnimationFrame       ||
@@ -28,13 +28,16 @@
     var socket = new WebSocket('ws://localhost:8090');
 
     socket.onmessage = function (e) {
-        console.log('Received: ' + e.data);
+        console.log('Received a image');
         var ctx = canvasShow.getContext('2d');
         var image = new Image();
         image.src = 'data:image/jpeg;base64,' + e.data;
-        ctx.drawImage(image, 0, 0, 400, 300);
-        console.log('it is ok');
+        image.onload = function () {
+            ctx.drawImage(image, 0, 0, 400, 300);
+        };
     };
+
+
 
     function sendFrameLoop() {
         if (socket == null || socket.readyState != socket.OPEN) {
@@ -48,7 +51,9 @@
 
         var msg = dataURL;
         socket.send(msg);
+
         setTimeout(function() {requestAnimFrame(sendFrameLoop)}, 250);
+
     }
 
     function successHandle(stream) {
@@ -66,4 +71,5 @@
         alert("No webcam detected.");
     }
 </script>
+</body>
 </html>

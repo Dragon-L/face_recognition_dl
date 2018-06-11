@@ -1,5 +1,5 @@
 import cv2
-from face_recognition_webcam import face_recognition
+from face_recognition import face_recognition
 
 
 video_capture = cv2.VideoCapture(0)
